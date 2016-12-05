@@ -31,7 +31,6 @@ parameters:
         default: 200
     sort_type:
         type: string
-        required: true
         enum:
             - descending
             - ascending
