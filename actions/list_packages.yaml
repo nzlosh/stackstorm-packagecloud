@@ -34,7 +34,7 @@ parameters:
         enum:
             - descending
             - ascending
-        default: True
+        default: descending
     sorted:
         type: boolean
         default: True
