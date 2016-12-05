@@ -29,3 +29,12 @@ parameters:
     per_page:
         type: number
         default: 200
+    sort_type:
+        type: string
+        enum:
+            - descending
+            - ascending
+        default: descending
+    sorted:
+        type: boolean
+        default: True
