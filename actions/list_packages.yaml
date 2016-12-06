@@ -35,6 +35,6 @@ parameters:
             - descending
             - ascending
         default: descending
-    sorted:
+    sort_packages:
         type: boolean
         default: True

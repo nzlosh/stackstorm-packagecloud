@@ -29,7 +29,7 @@ MAX_PAGE_NUMBER = 100
 
 class ListPackagesAction(pythonrunner.Action):
     def run(self, repo, package, distro_version, version, release, api_token, per_page=200,
-            sorted=True, sort_type='descending'):
+            sort_packages=True, sort_type='descending'):
         params = {'per_page': per_page}
         values = {'repo': repo, 'api_token': api_token}
         url = BASE_URL % values
@@ -65,7 +65,7 @@ class ListPackagesAction(pythonrunner.Action):
         if release:
             packages = [pkg_info for pkg_info in packages if pkg_info['release'] == release]
 
-        if sorted:
+        if sort_packages:
             reverse = False
             if sort_type == 'descending':
                 reverse = True
