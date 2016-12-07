@@ -28,8 +28,8 @@ MAX_PAGE_NUMBER = 100
 
 
 class ListPackagesAction(pythonrunner.Action):
-    def run(self, repo, package, distro_version, version, release, api_token, per_page=200,
-            sort_packages=True, sort_type='descending'):
+    def run(self, repo, package, distro_version, version, release, api_token,
+            per_page=200, sort_packages=True, sort_type='descending'):
         params = {'per_page': per_page}
         values = {'repo': repo, 'api_token': api_token}
         url = BASE_URL % values
@@ -52,26 +52,47 @@ class ListPackagesAction(pythonrunner.Action):
             page += 1
 
         if package:
-            packages = [pkg_info for pkg_info in packages if pkg_info['name'] == package]
+            packages = [
+                pkg_info for pkg_info in packages
+                if pkg_info['name'] == package
+            ]
 
         if distro_version:
             packages = [
-                pkg_info for pkg_info in packages if pkg_info['distro_version'] == distro_version
+                pkg_info for pkg_info in packages
+                if pkg_info['distro_version'] == distro_version
             ]
 
         if version:
-            packages = [pkg_info for pkg_info in packages if pkg_info['version'] == version]
+            packages = [
+                pkg_info for pkg_info in packages
+                if pkg_info['version'] == version
+            ]
 
         if release:
-            packages = [pkg_info for pkg_info in packages if pkg_info['release'] == release]
+            packages = [
+                pkg_info for pkg_info in packages
+                if pkg_info['release'] == release
+            ]
+
+        def new_semver_compare(compare1, compare2):
+            """ This function removes "dev" from version names and replaces with ".0"
+                to ensure the semver.compare function works as desired
+            """
+            return semver.compare(
+                compare1.replace("dev", ".0"), compare2.replace("dev", ".0")
+            )
 
         if sort_packages:
             reverse = False
             if sort_type == 'descending':
                 reverse = True
-            version_sorted = sorted(packages, cmp=semver.compare, key=lambda x: (x['version']),
+
+            version_sorted = sorted(packages, cmp=new_semver_compare,
+                                    key=lambda x: (x['version']),
                                     reverse=reverse)
-            revision_sorted = sorted(version_sorted, key=lambda x: (int(x['release'])),
+            revision_sorted = sorted(version_sorted,
+                                     key=lambda x: (int(x['release'])),
                                      reverse=reverse)
             return revision_sorted
         else:
