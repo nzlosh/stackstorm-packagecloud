@@ -75,13 +75,28 @@ class ListPackagesAction(pythonrunner.Action):
                 if pkg_info['release'] == release
             ]
 
-        def new_semver_compare(compare1, compare2):
+        def clean_version(ver_str):
             """ This function removes "dev" from version names and replaces with ".0"
                 to ensure the semver.compare function works as desired
             """
-            return semver.compare(
-                compare1.replace("dev", ".0"), compare2.replace("dev", ".0")
-            )
+            if "dev" in ver_str:
+
+                # Remove text after "dev"
+                ver_str = ver_str[:ver_str.index("dev") + 3]
+
+                # Figure out what we should replace "dev" with
+                if ver_str[ver_str.index("dev") - 1] == ".":
+                    suffix = "0"
+                else:
+                    suffix = ".0"
+
+                # Replace "dev" with suffix
+                ver_str = ver_str.replace("dev", suffix)
+
+            return ver_str
+
+        def new_semver_compare(compare1, compare2):
+            return semver.compare(clean_version(compare1), clean_version(compare2))
 
         if sort_packages:
             reverse = False
