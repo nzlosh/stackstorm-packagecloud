@@ -81,17 +81,14 @@ class ListPackagesAction(pythonrunner.Action):
             """
             if "dev" in ver_str:
 
-                # Remove text after "dev"
-                ver_str = ver_str[:ver_str.index("dev") + 3]
-
                 # Figure out what we should replace "dev" with
                 if ver_str[ver_str.index("dev") - 1] == ".":
-                    suffix = "0"
+                    suffix = "0-beta"
                 else:
-                    suffix = ".0"
+                    suffix = ".0-beta"
 
-                # Replace "dev" with suffix
-                ver_str = ver_str.replace("dev", suffix)
+                # Rewrite to contain only text before "dev" plus the new suffix
+                ver_str = ver_str[:ver_str.index("dev")] + suffix
 
             return ver_str
 
