@@ -43,7 +43,7 @@ parameters:
     api_token:
         type: string
         description: Token to access the packagecloud API
-        default: "{{system.pkg_cloud_token}}"
+        default: "{{st2kv.system.pkg_cloud_token}}"
     url:
         type: string
         immutable: true
