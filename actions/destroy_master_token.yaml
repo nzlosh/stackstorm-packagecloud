@@ -2,9 +2,13 @@
 name: "destroy_master_token"
 description: "destroy master token for a repository"
 pack: "packagecloud"
-runner_type: "local-shell-cmd"
+runner_type: python-script
+entry_point: entrypoint.py
 enabled: true
 parameters:
+  concise:
+    type: boolean
+    default: false
   user:
     type: string
     required: true
@@ -15,9 +19,12 @@ parameters:
     type: string
     required: true
     description: "Not the token value but the name used. See https://packagecloud.io/docs#revocation."
-  sudo:
+  api_token:
+    type: string
+    description: Token to access the packagecloud API
+    default: "{{st2kv.system.pkg_cloud_token}}"
+  method:
+    type: string
+    required: true
     immutable: true
-    default: true
-  cmd:
-    immutable: true
-    default: "echo y | package_cloud master_token destroy {{user}}/{{repository}} {{token_name}}"
+    default: destroy_master_token

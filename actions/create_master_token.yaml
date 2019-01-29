@@ -1,8 +1,9 @@
 ---
-name: "create_master_token"
-description: "create master token for a repository"
-pack: "packagecloud"
-runner_type: "local-shell-cmd"
+name: create_master_token
+pack: packagecloud
+description: Create master token
+runner_type: python-script
+entry_point: entrypoint.py
 enabled: true
 parameters:
   concise:
@@ -17,9 +18,12 @@ parameters:
   token_name:
     type: string
     required: true
-  sudo:
+  api_token:
+    type: string
+    description: Token to access the packagecloud API
+    default: "{{st2kv.system.pkg_cloud_token}}"
+  method:
+    type: string
+    required: true
     immutable: true
-    default: true
-  cmd:
-    immutable: true
-    default: "package_cloud master_token create {{user}}/{{repository}} {{token_name}} {% if concise -%} | grep 'Master token' | awk '{ print $6}' {% endif %}"
+    default: create_master_token

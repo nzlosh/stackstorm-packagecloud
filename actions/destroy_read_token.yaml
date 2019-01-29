@@ -2,9 +2,13 @@
 name: "destroy_read_token"
 description: "destroy read token for a repository"
 pack: "packagecloud"
-runner_type: "local-shell-cmd"
+runner_type: python-script
+entry_point: entrypoint.py
 enabled: true
 parameters:
+  concise:
+    type: boolean
+    default: false
   user:
     type: string
     required: true
@@ -19,9 +23,12 @@ parameters:
     type: string
     required: true
     description: "Not the token value but the name used. See https://packagecloud.io/docs#revocation."
-  sudo:
+  api_token:
+    type: string
+    description: Token to access the packagecloud API
+    default: "{{st2kv.system.pkg_cloud_token}}"
+  method:
+    type: string
+    required: true
     immutable: true
-    default: true
-  cmd:
-    immutable: true
-    default: "package_cloud read_token destroy {{user}}/{{repository}} {{master_token_name}}/{{read_token_name}}"
+    default: destroy_read_token

@@ -1,6 +1,6 @@
 ---
-name: "get_master_token"
-description: "Get master token for user!"
+name: "create_read_token"
+description: "create read token for a repository"
 pack: "packagecloud"
 runner_type: python-script
 entry_point: entrypoint.py
@@ -15,11 +15,14 @@ parameters:
   repository:
     type: string
     required: true
-  token_name:
+  master_token_name:
     type: string
     required: true
-  timeout:  # XXX: Package cloud LIST master_tokens API call takes a while!
-    default: 300
+    description: "Not the token value but the name used."
+  read_token_name:
+    type: string
+    required: true
+    description: "Not the token value but the name used."
   api_token:
     type: string
     description: Token to access the packagecloud API
@@ -28,4 +31,4 @@ parameters:
     type: string
     required: true
     immutable: true
-    default: get_master_token
+    default: create_read_token
