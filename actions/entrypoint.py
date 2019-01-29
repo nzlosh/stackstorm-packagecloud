@@ -52,9 +52,7 @@ class ActionManager(Action):
         method = kwargs.pop('method')
         conf['debug'] = kwargs.get('concise', False)
 
-        if method == 'get_all_packages':
-            packages = get_all_packages(conf['user'], conf['repo'], conf)
-        elif method == 'create_master_token':
+        if method == 'create_master_token':
             conf['token_name'] = kwargs.pop('token_name')
             create_master_token(
                 conf['user'],
