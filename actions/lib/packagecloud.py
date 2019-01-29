@@ -14,14 +14,12 @@
 
 from __future__ import print_function
 
-import shutil
 import sys
 import time
 
 from requests import ConnectionError
 from requests.exceptions import RequestException
 from requests import HTTPError
-from requests import post
 from requests import Request
 from requests import Session
 from requests import Timeout
@@ -302,7 +300,8 @@ def destroy_read_token(master_token_name, config, read_token_name):
                 return token['value']
             else:
                 eprint(
-                    "ERROR: Destroying token {} failed".format(read_token_name))
+                    "ERROR: Destroying token {} failed".\
+                    format(read_token_name))
                 eprint("Result: {}".format(resp))
 
 
