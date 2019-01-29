@@ -300,7 +300,7 @@ def destroy_read_token(master_token_name, config, read_token_name):
                 return token['value']
             else:
                 eprint(
-                    "ERROR: Destroying token {} failed".\
+                    "ERROR: Destroying token {} failed".
                     format(read_token_name))
                 eprint("Result: {}".format(resp))
 
