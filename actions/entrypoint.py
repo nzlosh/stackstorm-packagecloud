@@ -27,6 +27,7 @@ from lib.packagecloud import destroy_read_token
 from lib.packagecloud import get_master_token
 from lib.packagecloud import get_master_tokens
 
+
 class ActionManager(Action):
 
     def run(self, **kwargs):
@@ -55,21 +56,39 @@ class ActionManager(Action):
             packages = get_all_packages(conf['user'], conf['repo'], conf)
         elif method == 'create_master_token':
             conf['token_name'] = kwargs.pop('token_name')
-            create_master_token(conf['user'], conf['repo'], conf, conf['token_name'])
+            create_master_token(
+                conf['user'],
+                conf['repo'],
+                conf,
+                conf['token_name'])
         elif method == 'destroy_master_token':
             conf['token_name'] = kwargs.pop('token_name')
-            destroy_master_token(conf['user'], conf['repo'], conf, conf['token_name'])
+            destroy_master_token(
+                conf['user'],
+                conf['repo'],
+                conf,
+                conf['token_name'])
         elif method == 'create_read_token':
             conf['read_token_name'] = kwargs.pop('read_token_name')
             conf['master_token_name'] = kwargs.pop('master_token_name')
-            create_read_token(conf['master_token_name'], conf, conf['read_token_name'])
+            create_read_token(
+                conf['master_token_name'],
+                conf,
+                conf['read_token_name'])
         elif method == 'destroy_read_token':
             conf['read_token_name'] = kwargs.pop('read_token_name')
             conf['master_token_name'] = kwargs.pop('master_token_name')
-            destroy_read_token(conf['master_token_name'], conf, conf['read_token_name'])
+            destroy_read_token(
+                conf['master_token_name'],
+                conf,
+                conf['read_token_name'])
         elif method == 'get_master_token':
             conf['token_name'] = kwargs.pop('token_name')
-            d = get_master_token(conf['user'], conf['repo'], conf['token_name'], conf)
+            d = get_master_token(
+                conf['user'],
+                conf['repo'],
+                conf['token_name'],
+                conf)
             if d is None:
                 print("No master token found!", end='')
                 exit(1)
@@ -83,7 +102,9 @@ class ActionManager(Action):
                 print('\n  %s (%s)' % (obj['name'], obj['value']))
                 print('  read tokens:')
                 for robj in obj['read_tokens']:
-                    print('    { id: %s, name: %s, value: %s }' % (robj['id'], robj['name'], robj['value']))
+                    print(
+                        '    { id: %s, name: %s, value: %s }' %
+                        (robj['id'], robj['name'], robj['value']))
         else:
             print('Unknown method {}'.format(method))
             exit(1)
