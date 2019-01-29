@@ -19,7 +19,6 @@ from __future__ import print_function
 
 from st2common.runners.base_action import Action
 
-from lib.packagecloud import get_all_packages
 from lib.packagecloud import create_master_token
 from lib.packagecloud import destroy_master_token
 from lib.packagecloud import create_read_token
