@@ -58,12 +58,12 @@ def api_call(url, method, debug, **kwargs):
             break
         except (HTTPError, ConnectionError, Timeout) as ex:
             if attempt >= maxattempts:
-                abort(ex.message)
+                abort(ex.response)
             else:
                 time.sleep(1)
                 continue
         except RequestException as ex:
-            abort(ex.message)
+            abort(ex.response)
 
     if resp is not None:
         return resp
@@ -89,7 +89,7 @@ def get_master_tokens(user, repo, config):
         tokens = resp.json()
     except ValueError as ex:
         abort("Unexpected response from packagecloud API: "
-              "{}".format(ex.message))
+              "{}".format(str(ex)))
 
     return tokens
 
@@ -131,7 +131,7 @@ def get_master_token(user, repo, name, config):
         tokens = resp.json()
     except ValueError as ex:
         abort("Unexpected response from packagecloud API: "
-              "{}".format(ex.message))
+              "{}".format(str(ex)))
     for token in tokens:
         if token['name'] == name:
             return token
@@ -154,7 +154,7 @@ def create_master_token(user, repo, config, name):
         token = resp.json()
     except ValueError as ex:
         abort("Unexpected response from packagecloud API: "
-              "{}".format(ex.message))
+              "{}".format(str(ex)))
 
     if config['debug']:
         print("DEBUG: Token {} created, with value {}".
@@ -181,7 +181,7 @@ def destroy_master_token(user, repo, config, name):
                 resp = (api_call(url, 'delete', config['debug']))
             except ValueError as ex:
                 abort("Unexpected response from packagecloud API: "
-                      "{}".format(ex.message))
+                      "{}".format(str(ex)))
             if resp.status_code == 204:
                 print("Token destroyed, name: {}".format(name))
                 print("Result: {}" % resp)
@@ -213,7 +213,7 @@ def get_read_tokens(mastertoken, config):
         tokens = resp.json()
     except ValueError as ex:
         abort("Unexpected response from packagecloud API: "
-              "{}".format(ex.message))
+              "{}".format(str(ex)))
 
     return tokens['read_tokens']
 
@@ -258,7 +258,7 @@ def create_read_token(master_token_name, config, read_token_name):
         token = resp.json()
     except ValueError as ex:
         abort("Unexpected response from packagecloud API: "
-              "{}".format(ex.message))
+              "{}".format(str(ex)))
 
     if config['debug']:
         print("DEBUG: Token {} created, with value {}".
@@ -293,7 +293,7 @@ def destroy_read_token(master_token_name, config, read_token_name):
                 resp = (api_call(url, 'delete', config['debug']))
             except ValueError as ex:
                 abort("Unexpected response from packagecloud API: "
-                      "{}".format(ex.message))
+                      "{}".format(str(ex)))
             if resp.status_code == 204:
                 print("Token destroyed, name: {}".format(read_token_name))
                 print("Result: {}".format(resp))
@@ -334,6 +334,6 @@ def get_all_packages(user, repo, config):
 
         except ValueError as ex:
             abort("Unexpected response from packagecloud API: "
-                  "{}".format(ex.message))
+                  "{}".format(str(ex)))
 
     return packages
