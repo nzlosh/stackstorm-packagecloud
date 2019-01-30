@@ -9,6 +9,9 @@ parameters:
   concise:
     type: boolean
     default: false
+  debug:
+    type: boolean
+    default: false
   user:
     type: string
     required: true

@@ -110,8 +110,8 @@ def get_master_tokens_dict(user, repo, config):
             continue
         if token['name']:
             token_list[token['name']] = token['value']
-            if config['debug']:
-                print("DEBUG: Found token {} with value {}".
+            if config['verbose']:
+                print("Found token {} with value {}".
                       format(token['name'], token['value']))
 
     return token_list
@@ -156,8 +156,8 @@ def create_master_token(user, repo, config, name):
         abort("Unexpected response from packagecloud API: "
               "{}".format(str(ex)))
 
-    if config['debug']:
-        print("DEBUG: Token {} created, with value {}".
+    if config['verbose']:
+        print("Token {} created, with value {}".
               format(token['name'], token['value']))
 
     return token
@@ -183,8 +183,10 @@ def destroy_master_token(user, repo, config, name):
                 abort("Unexpected response from packagecloud API: "
                       "{}".format(str(ex)))
             if resp.status_code == 204:
-                print("Token destroyed, name: {}".format(name))
-                print("Result: {}" % resp)
+                if config['verbose']:
+                    print("Token destroyed, name: {}".format(name))
+                if config['debug']:
+                    print("Result: {}" % resp)
             else:
                 eprint("ERROR: Destroying token {} failed".format(name))
                 eprint("Result: {}".format(resp))
@@ -228,8 +230,8 @@ def get_read_tokens_dict(mastertoken, config):
     for token in tokens:
         if token['name']:
             token_list[token['name']] = token['value']
-            if config['debug']:
-                print("DEBUG: Found token {} with value {}".
+            if config['verbose']:
+                print("Found token {} with value {}".
                       format(token['name'], token['value']))
 
     return token_list
@@ -260,8 +262,8 @@ def create_read_token(master_token_name, config, read_token_name):
         abort("Unexpected response from packagecloud API: "
               "{}".format(str(ex)))
 
-    if config['debug']:
-        print("DEBUG: Token {} created, with value {}".
+    if config['verbose']:
+        print("Token {} created, with value {}".
               format(token['name'], token['value']))
     return token['value']
 
@@ -295,8 +297,10 @@ def destroy_read_token(master_token_name, config, read_token_name):
                 abort("Unexpected response from packagecloud API: "
                       "{}".format(str(ex)))
             if resp.status_code == 204:
-                print("Token destroyed, name: {}".format(read_token_name))
-                print("Result: {}".format(resp))
+                if config['verbose']:
+                    print("Token destroyed, name: {}".format(read_token_name))
+                if config['debug']:
+                    print("Result: {}".format(resp))
                 return token['value']
             else:
                 eprint(

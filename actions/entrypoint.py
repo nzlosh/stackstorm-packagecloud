@@ -49,7 +49,8 @@ class ActionManager(Action):
         }
 
         method = kwargs.pop('method')
-        conf['debug'] = kwargs.get('concise', False)
+        conf['verbose'] = not kwargs.get('concise', False)
+        conf['debug'] = kwargs.get('debug', False)
 
         if method == 'create_master_token':
             conf['token_name'] = kwargs.pop('token_name')
