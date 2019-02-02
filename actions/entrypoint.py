@@ -65,4 +65,4 @@ class ActionManager(Action):
         function = kwargs.pop('function')
 
         # Call the function
-        rv = funcs[function](conf, conf['verbose'])
+        funcs[function](conf, conf['verbose'])

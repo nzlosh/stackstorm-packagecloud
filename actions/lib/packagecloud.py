@@ -229,7 +229,9 @@ def create_read_token(config, verbose):
     config['token_name'] = config['master_token_name']
     mastertoken = get_master_token(config, False)
     if mastertoken is None:
-        abort("No master token found for: {}.".format(master_token_name))
+        abort(
+            "No master token found for: {}.".format(
+                config['master_token_name']))
 
     mt_path = mastertoken['paths']['self']
     url = "{}{}/read_tokens.json".format(config['domain_base'], mt_path)
