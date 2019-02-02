@@ -46,63 +46,23 @@ class ActionManager(Action):
                 http_scheme, api_token, api_domain, api_version),
             'user': kwargs.pop('user'),
             'repo': kwargs.pop('repository'),
+            'verbose': not kwargs.get('concise', False),
+            'debug': kwargs.get('debug', False),
+            'token_name': kwargs.get('token_name'),
+            'read_token_name': kwargs.get('read_token_name'),
+            'master_token_name': kwargs.get('master_token_name'),
         }
 
-        method = kwargs.pop('method')
-        conf['verbose'] = not kwargs.get('concise', False)
-        conf['debug'] = kwargs.get('debug', False)
+        funcs = {
+            'create_master_token': create_master_token,
+            'destroy_master_token': destroy_master_token,
+            'create_read_token': create_read_token,
+            'destroy_read_token': destroy_read_token,
+            'get_master_token': get_master_token,
+            'list_master_token': get_master_tokens,
+        }
 
-        if method == 'create_master_token':
-            conf['token_name'] = kwargs.pop('token_name')
-            create_master_token(
-                conf['user'],
-                conf['repo'],
-                conf,
-                conf['token_name'])
-        elif method == 'destroy_master_token':
-            conf['token_name'] = kwargs.pop('token_name')
-            destroy_master_token(
-                conf['user'],
-                conf['repo'],
-                conf,
-                conf['token_name'])
-        elif method == 'create_read_token':
-            conf['read_token_name'] = kwargs.pop('read_token_name')
-            conf['master_token_name'] = kwargs.pop('master_token_name')
-            create_read_token(
-                conf['master_token_name'],
-                conf,
-                conf['read_token_name'])
-        elif method == 'destroy_read_token':
-            conf['read_token_name'] = kwargs.pop('read_token_name')
-            conf['master_token_name'] = kwargs.pop('master_token_name')
-            destroy_read_token(
-                conf['master_token_name'],
-                conf,
-                conf['read_token_name'])
-        elif method == 'get_master_token':
-            conf['token_name'] = kwargs.pop('token_name')
-            d = get_master_token(
-                conf['user'],
-                conf['repo'],
-                conf['token_name'],
-                conf)
-            if d is None:
-                print("No master token found!", end='')
-                exit(1)
-            else:
-                print(d['value'], end='')
+        function = kwargs.pop('function')
 
-        elif method == 'list_master_token':
-            d = get_master_tokens(conf['user'], conf['repo'], conf)
-            print('Tokens for %s/%s:' % (conf['user'], conf['repo']))
-            for obj in d:
-                print('\n  %s (%s)' % (obj['name'], obj['value']))
-                print('  read tokens:')
-                for robj in obj['read_tokens']:
-                    print(
-                        '    { id: %s, name: %s, value: %s }' %
-                        (robj['id'], robj['name'], robj['value']))
-        else:
-            print('Unknown method {}'.format(method))
-            exit(1)
+        # Call the function
+        rv = funcs[function](conf, conf['verbose'])

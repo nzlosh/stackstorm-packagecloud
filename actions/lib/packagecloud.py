@@ -75,14 +75,15 @@ def api_call(url, method, debug, **kwargs):
 # Packagecloud Master tokens                              #
 # https://packagecloud.io/docs/api#resource_master_tokens #
 ###########################################################
-def get_master_tokens(user, repo, config):
+def get_master_tokens(config, verbose):
     """Lists all master tokens in repository
 
        https://packagecloud.io/docs/api#resource_master_tokens_method_index
 
        GET /api/v1/repos/:user/:repo/master_tokens
     """
-    url = "{}/repos/{}/{}/master_tokens".format(config['url_base'], user, repo)
+    url = "{}/repos/{}/{}/master_tokens".format(
+        config['url_base'], config['user'], config['repo'])
 
     try:
         resp = (api_call(url, 'get', config['debug']))
@@ -91,40 +92,28 @@ def get_master_tokens(user, repo, config):
         abort("Unexpected response from packagecloud API: "
               "{}".format(str(ex)))
 
+    if verbose:
+        print('Tokens for %s/%s:' % (config['user'], config['repo']))
+        for obj in tokens:
+            print('\n  %s (%s)' % (obj['name'], obj['value']))
+            print('  read tokens:')
+            for robj in obj['read_tokens']:
+                print(
+                    '    { id: %s, name: %s, value: %s }' %
+                    (robj['id'], robj['name'], robj['value']))
+
     return tokens
 
 
-def get_master_tokens_dict(user, repo, config):
-    """Get the complete master token dict from packagecloud
-
-       https://packagecloud.io/docs/api#resource_master_tokens_method_index
-
-       GET /api/v1/repos/:user/:repo/master_tokens
-    """
-    token_list = {}
-    tokens = get_master_tokens(user, repo, config)
-
-    for token in tokens:
-        # skip the default and web-download keys
-        if token['name'] in ('default', 'web-downloads'):
-            continue
-        if token['name']:
-            token_list[token['name']] = token['value']
-            if config['verbose']:
-                print("Found token {} with value {}".
-                      format(token['name'], token['value']))
-
-    return token_list
-
-
-def get_master_token(user, repo, name, config):
+def get_master_token(config, verbose):
     """Get one master token based on name
 
        https://packagecloud.io/docs/api#resource_master_tokens_method_index
 
        GET /api/v1/repos/:user/:repo/master_tokens
     """
-    url = "{}/repos/{}/{}/master_tokens".format(config['url_base'], user, repo)
+    url = "{}/repos/{}/{}/master_tokens".format(
+        config['url_base'], config['user'], config['repo'])
 
     try:
         resp = (api_call(url, 'get', config['debug']))
@@ -133,21 +122,25 @@ def get_master_token(user, repo, name, config):
         abort("Unexpected response from packagecloud API: "
               "{}".format(str(ex)))
     for token in tokens:
-        if token['name'] == name:
+        if token['name'] == config['token_name']:
+            if verbose:
+                print(token['value'])
             return token
 
+    print("No master token found!", end='')
     return None
 
 
-def create_master_token(user, repo, config, name):
+def create_master_token(config, verbose):
     """Create a named master token in repo
 
        https://packagecloud.io/docs/api#resource_master_tokens_method_create
 
        POST /api/v1/repos/:user/:repo/master_tokens
     """
-    url = "{}/repos/{}/{}/master_tokens".format(config['url_base'], user, repo)
-    postdata = ("master_token[name]={}".format(name))
+    url = "{}/repos/{}/{}/master_tokens".format(
+        config['url_base'], config['user'], config['repo'])
+    postdata = ("master_token[name]={}".format(config['token_name']))
 
     try:
         resp = (api_call(url, 'post', config['debug'], data=postdata))
@@ -156,25 +149,26 @@ def create_master_token(user, repo, config, name):
         abort("Unexpected response from packagecloud API: "
               "{}".format(str(ex)))
 
-    if config['verbose']:
+    if verbose:
         print("Token {} created, with value {}".
               format(token['name'], token['value']))
 
     return token
 
 
-def destroy_master_token(user, repo, config, name):
+def destroy_master_token(config, verbose):
     """Destroy a named master token in repo
 
        https://packagecloud.io/docs/api#resource_master_tokens_method_destroy
 
        DELETE /api/v1/repos/:user/:repo/master_tokens/:id
     """
-    tokens = get_master_tokens(user, repo, config)
+    tokens = get_master_tokens(config, False)
 
     for token in tokens:
-        if token['name'] == name:
-            print("Found token with name: {}".format(name))
+        if token['name'] == config['token_name']:
+            if config['debug']:
+                print("Found token with name: {}".format(config['token_name']))
             try:
                 url = "{}{}".format(config['domain_base'],
                                     token['paths']['self'])
@@ -183,12 +177,16 @@ def destroy_master_token(user, repo, config, name):
                 abort("Unexpected response from packagecloud API: "
                       "{}".format(str(ex)))
             if resp.status_code == 204:
-                if config['verbose']:
-                    print("Token destroyed, name: {}".format(name))
+                if verbose:
+                    print(
+                        "Token destroyed, name: {}".format(
+                            config['token_name']))
                 if config['debug']:
                     print("Result: {}" % resp)
             else:
-                eprint("ERROR: Destroying token {} failed".format(name))
+                eprint(
+                    "ERROR: Destroying token {} failed".format(
+                        config['token_name']))
                 eprint("Result: {}".format(resp))
 
     return True
@@ -220,24 +218,7 @@ def get_read_tokens(mastertoken, config):
     return tokens['read_tokens']
 
 
-def get_read_tokens_dict(mastertoken, config):
-    """Get the complete read token dict for given master token
-
-    """
-    token_list = {}
-    tokens = get_read_tokens(mastertoken, config)
-
-    for token in tokens:
-        if token['name']:
-            token_list[token['name']] = token['value']
-            if config['verbose']:
-                print("Found token {} with value {}".
-                      format(token['name'], token['value']))
-
-    return token_list
-
-
-def create_read_token(master_token_name, config, read_token_name):
+def create_read_token(config, verbose):
     """Create a named master token in repo
 
        https://packagecloud.io/docs/api#resource_read_tokens_method_create
@@ -245,15 +226,14 @@ def create_read_token(master_token_name, config, read_token_name):
        POST /api/v1/repos/:user/:repo/master_tokens/
             :master_token/read_tokens.json
     """
-    mastertoken = get_master_token(config['user'], config['repo'],
-                                   master_token_name, config)
+    config['token_name'] = config['master_token_name']
+    mastertoken = get_master_token(config, False)
     if mastertoken is None:
         abort("No master token found for: {}.".format(master_token_name))
 
     mt_path = mastertoken['paths']['self']
-    url = "{}{}/read_tokens.json".\
-        format(config['domain_base'], mt_path)
-    postdata = ("read_token[name]={}".format(read_token_name))
+    url = "{}{}/read_tokens.json".format(config['domain_base'], mt_path)
+    postdata = ("read_token[name]={}".format(config['read_token_name']))
 
     try:
         resp = (api_call(url, 'post', config['debug'], data=postdata))
@@ -262,33 +242,35 @@ def create_read_token(master_token_name, config, read_token_name):
         abort("Unexpected response from packagecloud API: "
               "{}".format(str(ex)))
 
-    if config['verbose']:
+    if verbose:
         print("Token {} created, with value {}".
               format(token['name'], token['value']))
     return token['value']
 
 
-def destroy_read_token(master_token_name, config, read_token_name):
+def destroy_read_token(config, verbose):
     """Destroy a named master token in repo
 
        https://packagecloud.io/docs/api#resource_read_tokens_method_destroy
 
        DELETE /api/v1/repos/:user/:repo/master_tokens/:id
     """
-    mastertoken = get_master_token(
-        config['user'],
-        config['repo'],
-        master_token_name,
-        config)
+    config['token_name'] = config['master_token_name']
+    mastertoken = get_master_token(config, False)
     if mastertoken is None:
-        abort("No master token found for: {}".format(master_token_name))
+        abort(
+            "No master token found for: {}".format(
+                config['master_token_name']))
 
     mt_path = mastertoken['paths']['self']
     tokens = get_read_tokens(mastertoken, config)
 
     for token in tokens:
-        if token['name'] == read_token_name:
-            print("Found token with name: {}".format(read_token_name))
+        if token['name'] == config['read_token_name']:
+            if config['debug']:
+                print(
+                    "Found token with name: {}".format(
+                        config['read_token_name']))
             try:
                 url = "{}{}/read_tokens/{}".format(config['domain_base'],
                                                    mt_path, token['id'])
@@ -297,47 +279,14 @@ def destroy_read_token(master_token_name, config, read_token_name):
                 abort("Unexpected response from packagecloud API: "
                       "{}".format(str(ex)))
             if resp.status_code == 204:
-                if config['verbose']:
-                    print("Token destroyed, name: {}".format(read_token_name))
+                if verbose:
+                    print("Token destroyed, name: {}".
+                          format(config['read_token_name']))
                 if config['debug']:
                     print("Result: {}".format(resp))
                 return token['value']
             else:
                 eprint(
                     "ERROR: Destroying token {} failed".
-                    format(read_token_name))
+                    format(config['read_token_name']))
                 eprint("Result: {}".format(resp))
-
-
-###########################################################
-# Packagecloud Packages                                   #
-# https://packagecloud.io/docs/api#resource_stats         #
-###########################################################
-def get_all_packages(user, repo, config):
-    """List All Packages (not grouped by package version)
-
-       https://packagecloud.io/docs/api#resource_packages_method_all
-
-       GET /api/v1/repos/:user/:repo/packages.json
-    """
-    packages = []
-    total = 1
-    fetched = 0
-    offset = 1
-
-    while fetched < total:
-        url = "{}/repos/{}/{}/packages.json?page={}".format(config['url_base'],
-                                                            user, repo, offset)
-        try:
-            resp = (api_call(url, 'get', config['debug']))
-            packages = packages + resp.json()
-            total = int(resp.headers['Total'])
-            perpage = int(resp.headers['Per-Page'])
-            fetched += perpage
-            offset += 1
-
-        except ValueError as ex:
-            abort("Unexpected response from packagecloud API: "
-                  "{}".format(str(ex)))
-
-    return packages
