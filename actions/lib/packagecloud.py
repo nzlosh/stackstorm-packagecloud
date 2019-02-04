@@ -124,7 +124,7 @@ def get_master_token(config, verbose):
     for token in tokens:
         if token['name'] == config['token_name']:
             if verbose:
-                print(token['value'])
+                print(token['value'], end='')
             return token
 
     print("No master token found!", end='')
@@ -150,8 +150,10 @@ def create_master_token(config, verbose):
               "{}".format(str(ex)))
 
     if verbose:
-        print("Token {} created, with value {}".
-              format(token['name'], token['value']))
+        print("Master token {} with value {} created".
+              format(token['name'], token['value']), end='')
+    else:
+        print("{}".format(token['value']), end='')
 
     return token
 
@@ -245,8 +247,10 @@ def create_read_token(config, verbose):
               "{}".format(str(ex)))
 
     if verbose:
-        print("Token {} created, with value {}".
-              format(token['name'], token['value']))
+        print("Read token {} with value {} created".
+              format(token['name'], token['value']), end='')
+    else:
+        print("{}".format(token['value']), end='')
     return token['value']
 
 
