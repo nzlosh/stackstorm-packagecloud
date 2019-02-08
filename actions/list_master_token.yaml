@@ -2,18 +2,28 @@
 name: "list_master_token"
 description: "List master tokens for a repository"
 pack: "packagecloud"
-runner_type: "local-shell-cmd"
+runner_type: python-script
+entry_point: entrypoint.py
 enabled: true
 parameters:
+  concise:
+    type: boolean
+    default: false
+  debug:
+    type: boolean
+    default: false
   user:
     type: string
     required: true
   repository:
     type: string
     required: true
-  sudo:
+  api_token:
+    type: string
+    description: Token to access the packagecloud API
+    default: "{{st2kv.system.pkg_cloud_token}}"
+  function:
+    type: string
+    required: true
     immutable: true
-    default: true
-  cmd:
-    immutable: true
-    default: "package_cloud master_token list {{user}}/{{repository}}"
+    default: list_master_token

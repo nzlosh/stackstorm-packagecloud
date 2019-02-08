@@ -2,28 +2,33 @@
 name: "get_master_token"
 description: "Get master token for user!"
 pack: "packagecloud"
-runner_type: "local-shell-script"
-entry_point: "get_master_token.sh"
+runner_type: python-script
+entry_point: entrypoint.py
 enabled: true
 parameters:
+  concise:
+    type: boolean
+    default: false
+  debug:
+    type: boolean
+    default: false
   user:
     type: string
     required: true
-    position: 1
-
   repository:
     type: string
     required: true
-    position: 2
-
   token_name:
     type: string
     required: true
-    position: 3
-
   timeout:  # XXX: Package cloud LIST master_tokens API call takes a while!
     default: 300
-
-  sudo:
+  api_token:
+    type: string
+    description: Token to access the packagecloud API
+    default: "{{st2kv.system.pkg_cloud_token}}"
+  function:
+    type: string
+    required: true
     immutable: true
-    default: true
+    default: get_master_token
