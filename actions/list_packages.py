@@ -41,7 +41,7 @@ class ListPackagesAction(pythonrunner.Action):
             page_url = url + '?page=' + str(page)
             response = requests.get(url=page_url, params=params)
 
-            if response.status_code != http_client.OK:
+            if response.status_code != http_client.OK:  # pylint: disable=no-member
                 raise Exception(response.text)
 
             packages += response.json()

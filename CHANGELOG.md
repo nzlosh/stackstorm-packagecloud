@@ -1,6 +1,14 @@
 Changelog
 =========
 
+1.0.1
+-----
+
+Changed
+~~~~~~~
+
+* Minor linting-related change
+
 1.0.0
 -----
 
