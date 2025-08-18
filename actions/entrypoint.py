@@ -30,39 +30,39 @@ from lib.packagecloud import get_master_tokens
 class ActionManager(Action):
 
     def run(self, **kwargs):
-        '''
+        """
         Action runner method
-        '''
+        """
 
-        http_scheme = 'https'
-        api_token = kwargs.pop('api_token')
-        api_domain = 'packagecloud.io'
-        api_version = 'v1'
+        http_scheme = "https"
+        api_token = kwargs.pop("api_token")
+        api_domain = "packagecloud.io"
+        api_version = "v1"
 
         conf = {
-            'domain_base': '{}://{}:@{}'.format(
-                http_scheme, api_token, api_domain),
-            'url_base': '{}://{}:@{}/api/{}'.format(
-                http_scheme, api_token, api_domain, api_version),
-            'user': kwargs.pop('user'),
-            'repo': kwargs.pop('repository'),
-            'verbose': not kwargs.get('concise', False),
-            'debug': kwargs.get('debug', False),
-            'token_name': kwargs.get('token_name'),
-            'read_token_name': kwargs.get('read_token_name'),
-            'master_token_name': kwargs.get('master_token_name'),
+            "domain_base": "{}://{}:@{}".format(http_scheme, api_token, api_domain),
+            "url_base": "{}://{}:@{}/api/{}".format(
+                http_scheme, api_token, api_domain, api_version
+            ),
+            "user": kwargs.pop("user"),
+            "repo": kwargs.pop("repository"),
+            "verbose": not kwargs.get("concise", False),
+            "debug": kwargs.get("debug", False),
+            "token_name": kwargs.get("token_name"),
+            "read_token_name": kwargs.get("read_token_name"),
+            "master_token_name": kwargs.get("master_token_name"),
         }
 
         funcs = {
-            'create_master_token': create_master_token,
-            'destroy_master_token': destroy_master_token,
-            'create_read_token': create_read_token,
-            'destroy_read_token': destroy_read_token,
-            'get_master_token': get_master_token,
-            'list_master_token': get_master_tokens,
+            "create_master_token": create_master_token,
+            "destroy_master_token": destroy_master_token,
+            "create_read_token": create_read_token,
+            "destroy_read_token": destroy_read_token,
+            "get_master_token": get_master_token,
+            "list_master_token": get_master_tokens,
         }
 
-        function = kwargs.pop('function')
+        function = kwargs.pop("function")
 
         # Call the function
-        funcs[function](conf, conf['verbose'])
+        funcs[function](conf, conf["verbose"])
