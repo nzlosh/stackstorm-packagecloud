@@ -1,3 +1,5 @@
+# Copyright 2025 The StackStorm Authors.
+
 # Licensed to the StackStorm, Inc ('StackStorm') under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional pkg_information regarding copyright ownership.
@@ -15,17 +17,20 @@
 
 import requests
 import semver
-import six.moves.http_client as http_client
+import http.client
 
-from st2actions.runners import pythonrunner
+from st2common import log as logging
+from st2common.runners.base_action import Action
 
 __all__ = ["ListPackagesAction"]
+
+LOG = logging.getLogger(__name__)
 
 BASE_URL = "https://%(api_token)s:@packagecloud.io/api/v1/repos/%(repo)s/packages.json"
 MAX_PAGE_NUMBER = 100
 
 
-class ListPackagesAction(pythonrunner.Action):
+class ListPackagesAction(Action):
     def run(
         self,
         repo,
@@ -43,67 +48,72 @@ class ListPackagesAction(pythonrunner.Action):
         url = BASE_URL % values
 
         page = 1
-        packages = []
+        metadata = []
 
         while page < MAX_PAGE_NUMBER:
             page_url = url + "?page=" + str(page)
             response = requests.get(url=page_url, params=params)
 
-            if response.status_code != http_client.OK:  # pylint: disable=no-member
+            if response.status_code != http.client.OK:  # pylint: disable=no-member
                 raise Exception(response.text)
 
-            packages += response.json()
+            metadata += response.json()
 
-            if len(packages) >= int(response.headers.get("Total", 0)):
+            if len(metadata) >= int(response.headers.get("Total", 0)):
                 break
 
             page += 1
+        LOG.debug("Processed %s page(s).", page)
 
-        if package:
-            packages = [pkg_info for pkg_info in packages if pkg_info["name"] == package]
+        # Filter package list based on package property arguments.
+        packages = []
+        for pkg_info in metadata:
+            if package and pkg_info["name"] != package:
+                continue
+            if distro_version and pkg_info["distro_version"] != distro_version:
+                continue
+            if version and not pkg_info["version"].startswith(version):
+                continue
+            if release and pkg_info["release"] != release:
+                continue
+            packages.append(pkg_info)
 
-        if distro_version:
-            packages = [
-                pkg_info for pkg_info in packages if pkg_info["distro_version"] == distro_version
-            ]
-
-        if version:
-            packages = [pkg_info for pkg_info in packages if pkg_info["version"] == version]
-
-        if release:
-            packages = [pkg_info for pkg_info in packages if pkg_info["release"] == release]
-
-        def clean_version(ver_str):
-            """This function removes "dev" from version names and replaces with ".0"
-            to ensure the semver.compare function works as desired
+        def format_semver(version, release):
             """
-            if "dev" in ver_str:
+            format_semver() removes "dev" from :version: and replaces it
+            with ".0".  This ensure semver's parse() function produces an object
+            that can be compared correctly with Python's sorted() function.
 
+            The version field in Packagecloud's package metadata has an
+            inconsistent format.  The two formats are shown below:
+                "version": "3.9dev-8", "release": "8"
+                "version": "3.9dev", "release": "8"
+
+            The trailing "-8" is also dropped when "dev" is removed.
+
+            The :release: argument is appended to the resulting version string
+            in the form "+8" which semver parses as the build field.
+            """
+            if "dev" in version:
                 # Figure out what we should replace "dev" with
-                if ver_str[ver_str.index("dev") - 1] == ".":
+                if version[version.index("dev") - 1] == ".":
                     suffix = "0-beta"
                 else:
                     suffix = ".0-beta"
 
                 # Rewrite to contain only text before "dev" plus the new suffix
-                ver_str = ver_str[: ver_str.index("dev")] + suffix
+                version = version[: version.index("dev")] + suffix
 
-            return ver_str
-
-        def new_semver_compare(compare1, compare2):
-            return semver.compare(clean_version(compare1), clean_version(compare2))
+            return f"{version}+{release}"
 
         if sort_packages:
-            reverse = False
-            if sort_type == "descending":
-                reverse = True
-
-            version_sorted = sorted(
-                packages, cmp=new_semver_compare, key=lambda x: (x["version"]), reverse=reverse
+            reverse = sort_type == "descending"
+            return sorted(
+                packages,
+                key=lambda pkgmeta: (
+                    semver.Version.parse(format_semver(pkgmeta["version"], pkgmeta["release"]))
+                ),
+                reverse=reverse,
             )
-            revision_sorted = sorted(
-                version_sorted, key=lambda x: (int(x["release"])), reverse=reverse
-            )
-            return revision_sorted
         else:
             return packages
