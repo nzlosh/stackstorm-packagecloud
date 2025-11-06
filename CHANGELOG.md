@@ -7,6 +7,7 @@ Changelog
 * Changed package sorting to evalute version and release together.
 * Added year to licence header in list_packages.py
 * Updated list_packages.py for python versions >3.8
+* Add distributions_index
 
 2.0.0
 ------------------------------------------------------------------------

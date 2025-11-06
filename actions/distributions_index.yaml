@@ -1,0 +1,17 @@
+---
+name: distributions_index
+pack: packagecloud
+description: >-
+  Get hashes describing each version of a particular Linux
+  distribution which supports the package type.
+runner_type: http-request
+enabled: true
+parameters:
+    api_token:
+        type: string
+        description: Token to access the packagecloud API
+        default: "{{st2kv.system.pkg_cloud_token}}"
+    url:
+        type: string
+        immutable: true
+        default: 'https://{{api_token}}:@packagecloud.io/api/v1/distributions.json'
